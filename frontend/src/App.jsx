@@ -36,7 +36,10 @@ function MainApp({ selectedLang, onSelectLang }) {
   const [activeSection, setActiveSection] = useState('home');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const handleLoginSuccess = (phone, isNewUser) => {
+  const handleLoginSuccess = (phone, isNewUser, dbProfile) => {
+    if (dbProfile) {
+      setProfile(prev => ({ ...prev, ...dbProfile }));
+    }
     setIsAuthenticated(true);
     setActiveSection(isNewUser ? 'registration' : 'home');
   };
@@ -385,7 +388,10 @@ function MainApp({ selectedLang, onSelectLang }) {
               </div>
               <Registration 
                 phone="1234567890" 
-                onRegistrationSuccess={() => setActiveSection('profile')} 
+                onRegistrationSuccess={(newProfile) => {
+                  if (newProfile) setProfile(prev => ({ ...prev, ...newProfile }));
+                  setActiveSection('profile');
+                }} 
               />
             </div>
           )}

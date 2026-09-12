@@ -7,6 +7,7 @@ from .models import schemas
 from .services.asr_tts import BhashiniConnector
 from .services.agent import process_conversation, translate_dict
 from .core.vectordb import query_recommendations
+from .core.db import get_database
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from gtts import gTTS
@@ -42,6 +43,35 @@ class RegistrationForm(BaseModel):
     primary_skill: Optional[str] = None
     field_of_interest: Optional[str] = None
     description: Optional[str] = None
+    pincode: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+
+# ----- Transcription quality validator -----
+NOISE_PATTERNS = {
+    # Whisper hallucinations on silence
+    "thank you", "thanks", "thanks for watching", "thank you for watching",
+    ".", ",", "...", " ", "", "uh", "um", "hmm", "hm", "ah", "oh",
+    "[music]", "[applause]", "[blank_audio]", "[noise]",
+    "आप", "धन्यवाद", # common Hindi hallucinations
+}
+
+def is_valid_transcription(text: str) -> bool:
+    """Returns True only when the transcription contains useful content."""
+    if not text:
+        return False
+    cleaned = text.strip().lower()
+    # Reject pure noise patterns
+    if cleaned in NOISE_PATTERNS:
+        return False
+    # Reject if fewer than 2 real alphanumeric characters
+    alphanum = [c for c in cleaned if c.isalnum()]
+    if len(alphanum) < 2:
+        return False
+    # Reject very long hallucinations (> 300 chars) for single-field inputs
+    if len(cleaned) > 300:
+        return False
+    return True
 
 @app.post("/api/v1/auth/request-otp")
 async def request_otp(req: OTPRequest):
@@ -50,19 +80,74 @@ async def request_otp(req: OTPRequest):
 @app.post("/api/v1/auth/verify-otp")
 async def verify_otp(req: OTPVerify):
     if req.otp == "1234":
-        # Mock logic: pretend numbers starting with '99' already exist
-        is_new_user = not req.phone.startswith("99")
-        return {
-            "status": "success", 
-            "message": "OTP verified successfully",
-            "is_new_user": is_new_user
-        }
+        db = get_database()
+        user = await db.users.find_one({"phone": req.phone})
+        
+        if user:
+            # User exists
+            profile_data = user.get("profile", {})
+            return {
+                "status": "success",
+                "message": "OTP verified successfully",
+                "is_new_user": False,
+                "profile": profile_data
+            }
+        else:
+            # New user
+            return {
+                "status": "success", 
+                "message": "OTP verified successfully",
+                "is_new_user": True,
+                "profile": None
+            }
     return {"status": "error", "message": "Invalid OTP"}
+
+# Fields that should only contain digits
+NUMERIC_FIELDS = {"age", "pincode"}
+# Minimum meaningful lengths per field
+MIN_LENGTHS = {"name": 2, "age": 1, "gender": 1, "pincode": 6, "district": 2}
+
+def sanitize_profile(raw: dict) -> dict:
+    """Strip empty, whitespace-only, or nonsensical values. Return only valid fields."""
+    cleaned = {}
+    for key, value in raw.items():
+        if value is None:
+            continue
+        text = str(value).strip()
+        if not text:
+            continue
+        # Numeric-only fields must actually be digits
+        if key in NUMERIC_FIELDS and not text.isdigit():
+            continue
+        # Honour minimum meaningful length
+        min_len = MIN_LENGTHS.get(key, 1)
+        if len(text) < min_len:
+            continue
+        cleaned[key] = text
+    return cleaned
 
 @app.post("/api/v1/register")
 async def register_user(form: RegistrationForm):
-    # Mock saving to DB
-    return {"status": "success", "message": "Registration complete!", "data": form.dict()}
+    db = get_database()
+    raw = form.dict(exclude_unset=True)
+    phone = raw.pop("phone", None)
+    
+    if not phone:
+        return {"status": "error", "message": "Phone number is required"}
+    
+    # Only persist validated, meaningful fields
+    profile_data = sanitize_profile(raw)
+    
+    if not profile_data:
+        return {"status": "error", "message": "No valid fields to save"}
+        
+    await db.users.update_one(
+        {"phone": phone},
+        {"$set": {"profile": profile_data, "phone": phone}},
+        upsert=True
+    )
+    
+    return {"status": "success", "message": "Registration complete!", "data": profile_data}
 
 @app.post("/api/v1/voice/transcribe-field")
 async def transcribe_field(
@@ -80,9 +165,14 @@ async def transcribe_field(
         transcribed_text = bhashini.transcribe_audio(audio_bytes, language, prompt=prompt)
     except Exception as e:
         print(f"Error during transcription: {e}")
-        transcribed_text = f"Sample voice input for {field_name}" # fallback
-        
-    return {"text": transcribed_text}
+        return {"text": "", "valid": False, "reason": "transcription_failed"}
+    
+    valid = is_valid_transcription(transcribed_text)
+    return {
+        "text": transcribed_text if valid else "",
+        "valid": valid,
+        "raw": transcribed_text  # let frontend log raw for debugging
+    }
 
 class TranslateRequest(BaseModel):
     texts: Dict[str, str]
@@ -169,7 +259,8 @@ async def voice_chat(
     audio_file: Optional[UploadFile] = File(None),
     text_transcript: Optional[str] = Form(None),
     language: str = Form("hi"),
-    current_profile_json: str = Form("{}")
+    current_profile_json: str = Form("{}"),
+    phone: Optional[str] = Form(None)
 ):
     profile_data = json.loads(current_profile_json)
     profile = schemas.BeneficiaryProfile(**profile_data)
@@ -177,10 +268,39 @@ async def voice_chat(
     transcribed_text = text_transcript
     if audio_file and not text_transcript:
         audio_bytes = await audio_file.read()
-        transcribed_text = bhashini.transcribe_audio(audio_bytes, language)
+        try:
+            raw_text = bhashini.transcribe_audio(audio_bytes, language)
+            # Only use transcription if it contains valid content
+            transcribed_text = raw_text if is_valid_transcription(raw_text) else None
+        except Exception as e:
+            print(f"ASR error in chat: {e}")
+            transcribed_text = None
+
+    if not transcribed_text:
+        return schemas.ChatResponse(
+            transcribed_text="",
+            bot_response_text="",
+            audio_base64="",
+            current_profile=profile
+        )
 
     bot_response_text, updated_profile = process_conversation(transcribed_text, profile)
     audio_base64 = bhashini.synthesize_text(bot_response_text, language)
+
+    # Persist any newly extracted valid profile fields to MongoDB
+    if phone:
+        try:
+            db = get_database()
+            updated_dict = updated_profile.dict(exclude_unset=True) if hasattr(updated_profile, 'dict') else {}
+            valid_fields = sanitize_profile(updated_dict)
+            if valid_fields:
+                await db.users.update_one(
+                    {"phone": phone},
+                    {"$set": {f"profile.{k}": v for k, v in valid_fields.items()}},
+                    upsert=True
+                )
+        except Exception as e:
+            print(f"MongoDB profile update error: {e}")
 
     return schemas.ChatResponse(
         transcribed_text=transcribed_text,

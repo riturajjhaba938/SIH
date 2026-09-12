@@ -97,13 +97,13 @@ export default function Registration({ phone, onRegistrationSuccess }) {
       });
       const data = await res.json();
       if (data.status === 'success' || res.ok) {
-        if(onRegistrationSuccess) onRegistrationSuccess();
+        if(onRegistrationSuccess) onRegistrationSuccess(data.data);
       } else {
         alert(data.message || 'Registration failed');
       }
     } catch (error) {
       // Fallback for mock demo
-      setTimeout(() => { if(onRegistrationSuccess) onRegistrationSuccess(); }, 1000);
+      setTimeout(() => { if(onRegistrationSuccess) onRegistrationSuccess(null); }, 1000);
     } finally {
       setLoading(false);
     }

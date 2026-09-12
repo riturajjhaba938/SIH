@@ -12,6 +12,7 @@ const LANG_CODES = {
 export default function VoiceInput({ label, value, onChangeText, fieldName, placeholder, multiline, language = 'hi' }) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState(null); // null | 'ok' | 'invalid'
   const recognitionRef = useRef(null);
 
   const speakPrompt = async (e) => {
@@ -69,15 +70,25 @@ export default function VoiceInput({ label, value, onChangeText, fieldName, plac
             body: formData,
           });
           const data = await res.json();
-          if (data.text && !data.text.includes("Error")) {
-             if (multiline) {
-               onChangeText(value ? `${value} ${data.text}` : data.text);
-             } else {
-               onChangeText(data.text);
-             }
+          
+          if (data.valid === false) {
+            // Backend flagged this as noise/unprocessable — don't write to form
+            console.warn('[VoiceInput] Invalid transcription (noise/silence). Raw:', data.raw);
+            setVoiceStatus('invalid');
+            setTimeout(() => setVoiceStatus(null), 3000);
+          } else if (data.text) {
+            if (multiline) {
+              onChangeText(value ? `${value} ${data.text}` : data.text);
+            } else {
+              onChangeText(data.text);
+            }
+            setVoiceStatus('ok');
+            setTimeout(() => setVoiceStatus(null), 2000);
           }
         } catch (err) {
           console.error("Transcription error:", err);
+          setVoiceStatus('invalid');
+          setTimeout(() => setVoiceStatus(null), 3000);
         } finally {
           setIsProcessing(false);
         }
@@ -150,6 +161,15 @@ export default function VoiceInput({ label, value, onChangeText, fieldName, plac
           </button>
         </div>
       </div>
+      {/* Voice feedback status */}
+      {voiceStatus === 'invalid' && (
+        <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+          <MicOff className="w-3 h-3" /> Could not understand audio — please try again or type your answer.
+        </p>
+      )}
+      {voiceStatus === 'ok' && (
+        <p className="text-xs text-emerald-600 mt-1">✓ Voice captured successfully</p>
+      )}
     </div>
   );
 }

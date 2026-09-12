@@ -44,13 +44,13 @@ export default function Login({ onLoginSuccess }) {
       });
       const data = await res.json();
       if (data.status === 'success') {
-        onLoginSuccess(phone, data.is_new_user);
+        onLoginSuccess(phone, data.is_new_user, data.profile);
       } else {
         setError(data.message || 'Invalid OTP');
       }
     } catch (err) {
       // Fallback for mock demo
-      if (otp === '1234') onLoginSuccess(phone, !phone.startsWith("99"));
+      if (otp === '1234') onLoginSuccess(phone, !phone.startsWith("99"), null);
       else setError('Invalid OTP. Try 1234.');
     }
   };
