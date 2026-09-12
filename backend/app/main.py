@@ -4,6 +4,7 @@ import json
 from .models import schemas
 from .services.asr_tts import BhashiniConnector
 from .services.agent import process_conversation
+from .services.libretranslate import translate_text
 from .core.vectordb import query_recommendations
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -121,3 +122,14 @@ async def get_recommendations(profile_json: str):
                 local_centers=["PM-AJAY Center A", "Local MSME Hub"]
             ))
     return recs
+
+@app.post("/api/translate", response_model=schemas.TranslateResponse)
+@app.post("/api/v1/translate", response_model=schemas.TranslateResponse)
+async def translate_endpoint(req: schemas.TranslateRequest):
+    result = await translate_text(
+        text=req.text,
+        source=req.source or "en",
+        target=req.target or "hi",
+        format=req.format or "text"
+    )
+    return schemas.TranslateResponse(**result)

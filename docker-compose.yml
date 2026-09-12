@@ -1,0 +1,31 @@
+services:
+  libretranslate:
+    image: libretranslate/libretranslate:latest
+    container_name: pmajay_libretranslate
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      # Preload English and Hindi models for quick startup (optional: add more languages comma-separated)
+      LT_LOAD_ONLY: "en,hi"
+      LT_UPDATE_MODELS: "true"
+      LT_CHAR_LIMIT: "5000"
+      LT_REQ_LIMIT: "0"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/languages"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pmajay_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - LIBRETRANSLATE_URL=http://libretranslate:5000
+    depends_on:
+      - libretranslate

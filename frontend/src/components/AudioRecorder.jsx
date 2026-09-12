@@ -18,6 +18,7 @@ import WaveVisualizer from './WaveVisualizer';
 import { encodeWAV } from '../utils/wavEncoder';
 import { syncQueue, getPendingAudio } from '../utils/audioQueue';
 import { QUICK_PROMPTS } from '../data/mockProfiles';
+import { useLanguage } from '../context/LanguageContext';
 
 const PROMPT_ICONS = {
   Scissors: Scissors,
@@ -26,7 +27,9 @@ const PROMPT_ICONS = {
   Sprout: Sprout
 };
 
-export default function AudioRecorder({ onProfileUpdate, activeLanguage = 'hi', currentProfile = {} }) {
+export default function AudioRecorder({ onProfileUpdate, activeLanguage, currentProfile = {} }) {
+  const { selectedLang: contextLang, t } = useLanguage();
+  const selectedLang = activeLanguage || contextLang || 'hi';
   const [recording, setRecording] = useState(false);
   const [recordTimer, setRecordTimer] = useState(0);
   const [audioUrl, setAudioUrl] = useState(null);
@@ -45,7 +48,7 @@ export default function AudioRecorder({ onProfileUpdate, activeLanguage = 'hi', 
     {
       id: 'welcome_1',
       sender: 'bot',
-      text: 'नमस्ते! मैं Ajay Saathi (PM-AJAY कौशल सहायक) हूँ। कृपया मुझे अपनी पढ़ाई, काम के अनुभव और अपनी पसंद के बारे में बताएं। (Hello! I am Ajay Saathi, your PM-AJAY Skill Assistant. Tell me about your education, trade, and job preference.)',
+      text: 'नमस्ते! मैं अजय साथी हूँ। कृपया मुझे अपनी पढ़ाई, काम के अनुभव और अपनी पसंद के बारे में बताएं।',
       timestamp: 'Just now',
       audioBase64: null
     }
@@ -466,7 +469,7 @@ export default function AudioRecorder({ onProfileUpdate, activeLanguage = 'hi', 
               className="clay-btn clay-btn-saffron flex items-center space-x-2 px-7 py-3 font-bold text-xs cursor-pointer"
             >
               <Mic className="w-4 h-4 text-white" />
-              <span>Tap to Speak (बोलें)</span>
+              <span>{t('tapToSpeak', 'Tap to Speak')}</span>
             </button>
           ) : (
             <button

@@ -23,6 +23,7 @@ import {
   HeartHandshake
 } from 'lucide-react';
 import { ENRICHED_NSQF_CATALOG, SCHEME_COMPONENTS } from '../data/mockProfiles';
+import { useLanguage } from '../context/LanguageContext';
 import EnrollmentModal from './EnrollmentModal';
 import farmerImg from '../assets/happy-smiling-indian-farmer-with-tractor-real-farming-life-rural-india_1257902-6315.avif';
 import childrenImg from '../assets/Children.png';
@@ -35,6 +36,7 @@ export default function BeneficiaryDashboard({
   onSelectTab,
   showHero = true 
 }) {
+  const { selectedLang, t } = useLanguage();
   const [recommendations, setRecommendations] = useState([]);
   const [currentTab, setCurrentTab] = useState(activeTab);
   const [selectedCourseForEnroll, setSelectedCourseForEnroll] = useState(null);
@@ -162,7 +164,7 @@ export default function BeneficiaryDashboard({
                 Explore matched NSQF courses, claim direct monthly stipends, and access subsidized toolkits tailored for your trade.
               </p>
               <div className="mt-2 text-xs text-orange-900 font-bold bg-white/70 backdrop-blur-xs px-3 py-1 rounded-full w-fit border border-orange-200/60 shadow-2xs">
-                "हर हुनर की है एक नई उड़ान — Your Potential, Our Support"
+                "{t('motto', 'Every Skill Takes Flight — Your Potential, Our Support')}"
               </div>
             </div>
 
@@ -316,50 +318,50 @@ export default function BeneficiaryDashboard({
           <div className="clay-peach p-3.5 rounded-2xl">
             <div className="flex items-center space-x-1.5 text-orange-700">
               <GraduationCap className="w-4 h-4" />
-              <span className="text-[10px] uppercase font-bold tracking-wider">Education</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('education', 'Education')}</span>
             </div>
             <div className="text-xs font-bold text-slate-900 mt-1 truncate">
-              {profile.education_level || 'Not provided'}
+              {t(profile.education_level, profile.education_level || 'Not provided')}
             </div>
           </div>
 
           <div className="clay-amber p-3.5 rounded-2xl">
             <div className="flex items-center space-x-1.5 text-amber-800">
               <Briefcase className="w-4 h-4" />
-              <span className="text-[10px] uppercase font-bold tracking-wider">Trade</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('trade', 'Trade')}</span>
             </div>
             <div className="text-xs font-bold text-slate-900 mt-1 truncate">
-              {profile.traditional_trade || 'Not provided'}
+              {t(profile.traditional_trade, profile.traditional_trade || 'Not provided')}
             </div>
           </div>
 
           <div className="clay-mint p-3.5 rounded-2xl">
             <div className="flex items-center space-x-1.5 text-emerald-800">
               <Target className="w-4 h-4" />
-              <span className="text-[10px] uppercase font-bold tracking-wider">Occupation</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('occupation', 'Occupation')}</span>
             </div>
             <div className="text-xs font-bold text-slate-900 mt-1 truncate">
-              {profile.current_livelihood || 'Not provided'}
+              {t(profile.current_livelihood, profile.current_livelihood || 'Not provided')}
             </div>
           </div>
 
           <div className="clay-card p-3.5 rounded-2xl border-orange-200/70 bg-gradient-to-br from-white to-orange-50/50">
             <div className="flex items-center space-x-1.5 text-orange-700">
               <Compass className="w-4 h-4" />
-              <span className="text-[10px] uppercase font-bold tracking-wider">Mobility</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('mobility', 'Mobility')}</span>
             </div>
             <div className="text-xs font-bold text-slate-900 mt-1 truncate">
-              {profile.mobility_km ? `${profile.mobility_km} km radius` : '10 km'}
+              {profile.mobility_km ? `${profile.mobility_km} ${t('kmRadius', 'km radius')}` : `10 ${t('kmRadius', 'km radius')}`}
             </div>
           </div>
 
           <div className="clay-mint p-3.5 rounded-2xl col-span-2 sm:col-span-1">
             <div className="flex items-center space-x-1.5 text-emerald-800">
               <Coins className="w-4 h-4" />
-              <span className="text-[10px] uppercase font-bold tracking-wider">Preference</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('preference', 'Preference')}</span>
             </div>
             <div className="text-xs font-bold text-slate-900 mt-1 truncate">
-              {profile.preference || 'Wage Job'}
+              {t(profile.preference, profile.preference || 'Wage Job')}
             </div>
           </div>
         </div>
@@ -404,7 +406,7 @@ export default function BeneficiaryDashboard({
                   : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
               }`}
             >
-              Recommended NSQF Packs ({filteredRecommendations.length})
+              {t('recommendedNsqfPacks', 'Recommended NSQF Packs')} ({filteredRecommendations.length})
             </button>
             
             <button
@@ -415,7 +417,7 @@ export default function BeneficiaryDashboard({
                   : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
               }`}
             >
-              PM-AJAY Subsidies
+              {t('subsidies', 'PM-AJAY Subsidies')}
             </button>
 
             <button
@@ -426,7 +428,7 @@ export default function BeneficiaryDashboard({
                   : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
               }`}
             >
-              Training Centers
+              {t('centers', 'Training Centers')}
             </button>
           </div>
 
@@ -437,7 +439,7 @@ export default function BeneficiaryDashboard({
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search courses or skills..."
+                placeholder={t('searchCoursesSkills', 'Search courses or skills...')}
                 className="pl-9 pr-3 py-2 text-xs bg-[#f8faf9] border border-slate-200 rounded-full text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 w-52 shadow-inner"
               />
             </div>
@@ -450,14 +452,14 @@ export default function BeneficiaryDashboard({
             <div className="flex items-center justify-between pb-2">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">
-                  NSQF-Aligned Skill Recommendations
+                  {t('nsqfSkillRecs', 'NSQF-Aligned Skill Recommendations')}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Matched based on your education ({profile.education_level || '10th'}) and trade ({profile.traditional_trade || 'Tailoring'})
+                  {t('matchedBasedOn', 'Matched based on your education and trade')} ({t(profile.education_level, profile.education_level || '10th')}, {t(profile.traditional_trade, profile.traditional_trade || 'Tailoring')})
                 </p>
               </div>
               <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                100% Free Training
+                {t('freeTraining', '100% Free Training')}
               </span>
             </div>
 
@@ -471,32 +473,32 @@ export default function BeneficiaryDashboard({
                     <div>
                       <div className="flex flex-wrap items-center gap-2 mb-2">
                         <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800 font-bold text-xs border border-orange-200">
-                          NSQF Level {rec.level}
+                          {t('nsqfLevel', 'NSQF Level')} {rec.level}
                         </span>
                         <span className="text-xs text-slate-500 font-medium">
-                          {rec.sector || 'Skilling Domain'} • {rec.duration || '3 Months'}
+                          {t(rec.sector, rec.sector || 'Skilling Domain')} • {t(rec.duration, rec.duration || '3 Months')}
                         </span>
                         <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs border border-emerald-200 flex items-center space-x-1">
                           <Sparkles className="w-3 h-3 text-emerald-700" />
-                          <span>{rec.matchScore || 94}% Fit</span>
+                          <span>{rec.matchScore || 94}% {t('fit', 'Fit')}</span>
                         </span>
                         <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-semibold border border-blue-200">
-                          High Demand
+                          {t('highDemand', 'High Demand')}
                         </span>
                       </div>
 
                       <h4 className="text-base font-bold text-slate-900 hover:text-emerald-800 transition">
-                        {rec.nsqf_pack_name}
+                        {t(rec.nsqf_pack_name, rec.nsqf_pack_name)}
                       </h4>
 
                       {/* Skill Gap Analysis Box */}
                       <div className="mt-3 p-3.5 rounded-2xl bg-[#f8faf9] border border-slate-200/70">
                         <div className="text-[11px] font-bold uppercase text-slate-700 tracking-wider flex items-center space-x-1.5">
                           <Target className="w-3.5 h-3.5 text-orange-600" />
-                          <span>Skill Gap Analysis:</span>
+                          <span>{t('skillGapAnalysis', 'Skill Gap Analysis:')}</span>
                         </div>
                         <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                          {rec.skill_gap_analysis}
+                          {t(rec.skill_gap_analysis, rec.skill_gap_analysis)}
                         </p>
                       </div>
 
@@ -504,15 +506,18 @@ export default function BeneficiaryDashboard({
                       {rec.modules && (
                         <div className="mt-3">
                           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                            Core Curriculum Modules:
+                            {t('coreCurriculumModules', 'Core Curriculum Modules:')}
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-slate-700">
-                            {rec.modules.map((m, mIdx) => (
-                              <div key={mIdx} className="flex items-center space-x-1.5">
-                                <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                <span className="truncate">{m}</span>
-                              </div>
-                            ))}
+                            {rec.modules.map((m, mIdx) => {
+                              const moduleName = typeof m === 'object' ? m.name : m;
+                              return (
+                                <div key={mIdx} className="flex items-center space-x-1.5">
+                                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                  <span className="truncate">{t(moduleName, moduleName)}</span>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
@@ -522,10 +527,10 @@ export default function BeneficiaryDashboard({
                     <div className="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2 text-xs">
                         <span className="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-medium">
-                          {rec.stipend || '₹1,500/mo DBT Stipend'}
+                          {t(rec.stipend, rec.stipend || '₹1,500/mo DBT Stipend')}
                         </span>
                         <span className="px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 font-medium">
-                          Free Tool Kit
+                          {t('freeToolkit', 'Free Tool Kit')}
                         </span>
                       </div>
 
@@ -533,7 +538,7 @@ export default function BeneficiaryDashboard({
                         onClick={() => setSelectedCourseForEnroll(rec)}
                         className="clay-btn clay-btn-saffron px-5 py-2 text-xs font-bold flex items-center space-x-1 cursor-pointer"
                       >
-                        <span>Enroll Now</span>
+                        <span>{t('enrollNow', 'Enroll Now')}</span>
                         <ChevronRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -543,9 +548,9 @@ export default function BeneficiaryDashboard({
             ) : (
               <div className="p-8 text-center rounded-3xl bg-[#f8faf9] border border-slate-200">
                 <AlertCircle className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <h4 className="text-sm font-bold text-slate-700">No NSQF Courses Found</h4>
+                <h4 className="text-sm font-bold text-slate-700">{t('noNsqfCoursesFound', 'No NSQF Courses Found')}</h4>
                 <p className="text-xs text-slate-500 mt-1">
-                  Try speaking to the assistant or updating the search filter.
+                  {t('noNsqfCoursesDesc', 'Try speaking to the assistant or updating the search filter.')}
                 </p>
               </div>
             )}
@@ -569,17 +574,17 @@ export default function BeneficiaryDashboard({
                   <div>
                     <div className="flex items-center space-x-2">
                       <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800 text-[10px] font-bold border border-orange-200">
-                        100% Centrally Sponsored
+                        {t('centrallySponsored', '100% Centrally Sponsored')}
                       </span>
                       <span className="text-xs text-emerald-800 font-bold">
-                        Ministry of Social Justice & Empowerment
+                        {t('ministryName', 'Ministry of Social Justice & Empowerment')}
                       </span>
                     </div>
                     <h3 className="text-lg font-extrabold text-slate-900 mt-1">
-                      PM-AJAY Special Central Assistance (SCA) Entitlements
+                      {t('scaEntitlements', 'PM-AJAY Special Central Assistance (SCA) Entitlements')}
                     </h3>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      Direct benefit transfers, income-generating subsidies up to ₹50,000, and fully equipped starter toolkits.
+                      {t('scaDesc', 'Direct benefit transfers, income-generating subsidies up to ₹50,000, and fully equipped starter toolkits.')}
                     </p>
                   </div>
                 </div>
@@ -587,7 +592,7 @@ export default function BeneficiaryDashboard({
                 <div className="flex items-center space-x-2 shrink-0">
                   <span className="px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold border border-emerald-200 flex items-center space-x-1 shadow-2xs">
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>Active Scheme</span>
+                    <span>{t('activeScheme', 'Active Scheme')}</span>
                   </span>
                 </div>
               </div>
@@ -602,15 +607,15 @@ export default function BeneficiaryDashboard({
                   </div>
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h4 className="text-sm font-bold text-slate-900">{item.title}</h4>
+                      <h4 className="text-sm font-bold text-slate-900">{t(item.title, item.title)}</h4>
                       <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
-                        {item.tag}
+                        {t(item.tag, item.tag)}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">{item.subtitle}</p>
+                    <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">{t(item.subtitle, item.subtitle)}</p>
                     <div className="mt-3 text-[11px] text-emerald-800 font-semibold flex items-center space-x-1">
                       <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Direct Benefit Transfer (DBT) eligible</span>
+                      <span>{t('dbtEligible', 'Direct Benefit Transfer (DBT) eligible')}</span>
                     </div>
                   </div>
                 </div>
@@ -622,23 +627,23 @@ export default function BeneficiaryDashboard({
               <div className="flex-1 space-y-2">
                 <div className="flex items-center space-x-2 text-xs font-bold text-emerald-800 uppercase tracking-wider">
                   <HeartHandshake className="w-4 h-4 text-emerald-700" />
-                  <span>Socio-Economic Transformation</span>
+                  <span>{t('socioEconomicTrans', 'Socio-Economic Transformation')}</span>
                 </div>
                 <h4 className="text-base sm:text-lg font-extrabold text-slate-900">
-                  Building Brighter Futures for Families & Youth
+                  {t('buildingBrighterFutures', 'Building Brighter Futures for Families & Youth')}
                 </h4>
                 <p className="text-xs text-slate-600 leading-relaxed max-w-xl">
-                  PM-AJAY skilling and financial grants uplift rural households, creating sustainable multi-generational livelihoods, quality education opportunities, and economic dignity across India.
+                  {t('buildingBrighterFuturesDesc', 'PM-AJAY skilling and financial grants uplift rural households, creating sustainable multi-generational livelihoods, quality education opportunities, and economic dignity across India.')}
                 </p>
                 <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
                   <span className="px-2.5 py-1 rounded-full bg-white text-slate-700 font-semibold border border-slate-200 shadow-2xs">
-                    Family Welfare
+                    {t('familyWelfare', 'Family Welfare')}
                   </span>
                   <span className="px-2.5 py-1 rounded-full bg-white text-slate-700 font-semibold border border-slate-200 shadow-2xs">
-                    Zero Fees
+                    {t('zeroFees', 'Zero Fees')}
                   </span>
                   <span className="px-2.5 py-1 rounded-full bg-white text-orange-800 font-bold border border-orange-200 shadow-2xs">
-                    Guaranteed DBT
+                    {t('guaranteedDbt', 'Guaranteed DBT')}
                   </span>
                 </div>
               </div>
@@ -650,7 +655,7 @@ export default function BeneficiaryDashboard({
                   className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-900/70 to-transparent p-2 text-center">
-                  <span className="text-[10px] text-white font-bold">Empowering Next-Gen India</span>
+                  <span className="text-[10px] text-white font-bold">{t('empoweringNextGen', 'Empowering Next-Gen India')}</span>
                 </div>
               </div>
             </div>
@@ -658,13 +663,13 @@ export default function BeneficiaryDashboard({
             {/* Application & Subsidy Calculator Note */}
             <div className="p-4 rounded-2xl bg-[#f8faf9] border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
               <div className="text-slate-600">
-                <strong>Need financial loan assistance?</strong> PM-AJAY facilitates collateral-free credit tie-up under MUDRA & Stand-Up India schemes.
+                <strong>{t('needLoanHelp', 'Need financial loan assistance?')}</strong> {t('loanHelpDesc', 'PM-AJAY facilitates collateral-free credit tie-up under MUDRA & Stand-Up India schemes.')}
               </div>
               <button
                 onClick={() => handleTabChange('centers')}
                 className="clay-btn clay-btn-green px-4 py-2 text-xs font-bold text-white shrink-0 cursor-pointer"
               >
-                Visit Nearest Center
+                {t('visitNearestCenter', 'Visit Nearest Center')}
               </button>
             </div>
           </div>
@@ -676,14 +681,14 @@ export default function BeneficiaryDashboard({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 gap-2">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">
-                  Certified PM-AJAY Training Centers in Your District
+                  {t('certifiedCentersTitle', 'Certified PM-AJAY Training Centers in Your District')}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Fully accredited centers offering smart classrooms, practical workshops, and direct placement cells.
+                  {t('certifiedCentersDesc', 'Fully accredited centers offering smart classrooms, practical workshops, and direct placement cells.')}
                 </p>
               </div>
               <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                4 Centers Located
+                4 {t('centersLocated', 'Centers Located')}
               </span>
             </div>
 
@@ -732,13 +737,13 @@ export default function BeneficiaryDashboard({
                 >
                   <div>
                     <h4 className="font-extrabold text-slate-900 text-base group-hover:text-emerald-900 transition">
-                      {center.name}
+                      {t(center.name, center.name)}
                     </h4>
 
                     <div className="space-y-2 mt-3 text-sm text-slate-600">
                       <div className="flex items-center">
                         <MapPin className="w-4 h-4 mr-2.5 text-orange-600 shrink-0" />
-                        <span className="text-slate-600 font-medium">{center.address}</span>
+                        <span className="text-slate-600 font-medium">{t(center.address, center.address)}</span>
                       </div>
                       <div className="flex items-center">
                         <Phone className="w-4 h-4 mr-2.5 text-slate-400 shrink-0" />
@@ -749,25 +754,25 @@ export default function BeneficiaryDashboard({
                     </div>
 
                     <div className="mt-3.5 px-3 py-1.5 rounded-xl bg-[#f8faf9] text-xs text-slate-500 font-medium border border-slate-100 flex items-center justify-between">
-                      <span>Facility: {center.facility}</span>
+                      <span>{t('facility', 'Facility')}: {t(center.facility, center.facility)}</span>
                       <span className="text-slate-400">• {center.timing}</span>
                     </div>
                   </div>
 
                   <div className="mt-6 pt-3 flex items-center justify-between text-sm">
                     <span className="text-orange-700 font-bold text-base tracking-tight">
-                      {center.distance}
+                      {t(center.distance, center.distance)}
                     </span>
                     <div className="flex items-center space-x-2">
                       <span className="px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs border border-emerald-200 shadow-2xs">
-                        {center.seats}
+                        {t(center.seats, center.seats)}
                       </span>
                       <button
                         onClick={() => handleTabChange('courses')}
                         className="px-3 py-1 rounded-full bg-slate-50 hover:bg-emerald-50 text-slate-600 hover:text-emerald-800 font-bold text-xs transition border border-slate-200 hover:border-emerald-300 cursor-pointer"
                         title="View courses offered here"
                       >
-                        Courses →
+                        {t('coursesArrow', 'Courses →')}
                       </button>
                     </div>
                   </div>

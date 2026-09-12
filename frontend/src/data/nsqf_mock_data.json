@@ -1,0 +1,30 @@
+[
+  {
+    "id": "nsqf_001",
+    "name": "Sewing Machine Operator",
+    "level": 3,
+    "description": "Operates industrial sewing machines to join pieces of fabric or garment parts. Requires basic hand-eye coordination and sitting for long periods.",
+    "ideal_for": ["Low formal education", "Traditional trade: Tailoring", "Wage employment", "Low mobility"]
+  },
+  {
+    "id": "nsqf_002",
+    "name": "Solar Panel Installation Technician",
+    "level": 4,
+    "description": "Installs and maintains solar panels on rooftops. Requires physical fitness and ability to work outdoors and at heights.",
+    "ideal_for": ["10th grade pass", "Wage employment", "High mobility"]
+  },
+  {
+    "id": "nsqf_003",
+    "name": "Organic Grower",
+    "level": 4,
+    "description": "Cultivates organic crops using natural farming methods. Suitable for individuals with access to land or seeking self-employment in agriculture.",
+    "ideal_for": ["Traditional trade: Farming", "Self-Employment", "Rural areas"]
+  },
+  {
+    "id": "nsqf_004",
+    "name": "Beauty Therapist",
+    "level": 3,
+    "description": "Provides basic beauty, skincare, and grooming services. Highly suitable for individuals seeking self-employment or local salon work.",
+    "ideal_for": ["Self-Employment", "Wage employment", "Low mobility"]
+  }
+]

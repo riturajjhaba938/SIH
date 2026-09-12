@@ -1,6 +1,5 @@
 import re
 from typing import Dict, Any, TypedDict
-from langgraph.graph import StateGraph, END
 from app.models.schemas import BeneficiaryProfile
 
 class AgentState(TypedDict):
@@ -46,16 +45,17 @@ def generate_response(state: AgentState) -> AgentState:
     
     return state
 
-# Build the Graph
-workflow = StateGraph(AgentState)
-workflow.add_node("extract", extract_slots)
-workflow.add_node("respond", generate_response)
-
-workflow.set_entry_point("extract")
-workflow.add_edge("extract", "respond")
-workflow.add_edge("respond", END)
-
-app_graph = workflow.compile()
+try:
+    from langgraph.graph import StateGraph, END
+    workflow = StateGraph(AgentState)
+    workflow.add_node("extract", extract_slots)
+    workflow.add_node("respond", generate_response)
+    workflow.set_entry_point("extract")
+    workflow.add_edge("extract", "respond")
+    workflow.add_edge("respond", END)
+    app_graph = workflow.compile()
+except ImportError:
+    app_graph = None
 
 def process_conversation(text: str, current_profile: BeneficiaryProfile) -> tuple[str, BeneficiaryProfile]:
     inputs = {
@@ -65,7 +65,12 @@ def process_conversation(text: str, current_profile: BeneficiaryProfile) -> tupl
         "bot_response": ""
     }
     
-    result = app_graph.invoke(inputs)
+    if app_graph:
+        result = app_graph.invoke(inputs)
+    else:
+        state = extract_slots(inputs)
+        result = generate_response(state)
     
     updated_profile = BeneficiaryProfile(**result["profile"])
     return result["bot_response"], updated_profile
+

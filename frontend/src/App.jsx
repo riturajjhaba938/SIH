@@ -4,6 +4,10 @@ import Navbar from './components/Navbar';
 import AudioRecorder from './components/AudioRecorder';
 import BeneficiaryDashboard from './components/BeneficiaryDashboard';
 import BeneficiaryReportModal from './components/BeneficiaryReportModal';
+import AuthModal from './components/AuthModal';
+import AIAssistantView from './components/AIAssistantView';
+import RecommendationsView from './components/RecommendationsView';
+import PersonalDashboardView from './components/PersonalDashboardView';
 import { 
   Mic, 
   LayoutDashboard, 
@@ -12,25 +16,42 @@ import {
   MapPin, 
   UserCheck, 
   ArrowLeft,
-  FileText
+  FileText,
+  Briefcase,
+  Sparkles,
+  Award,
+  LogIn
 } from 'lucide-react';
+import LoginPage from './components/LoginPage';
+import { ENRICHED_NSQF_CATALOG, DEMO_PERSONAS } from './data/mockProfiles';
+import { useLanguage } from './context/LanguageContext';
 import './index.css';
 
 function App() {
+  const { selectedLang, setLanguage, setLanguage: setSelectedLang, t } = useLanguage();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [profile, setProfile] = useState({
-    name: 'Ramesh Kumar',
+    name: 'Ravi Kumar',
+    phone: '9876543210',
     district: 'Varanasi, UP',
     education_level: '10th Grade',
-    traditional_trade: 'Tailoring',
+    traditional_trade: 'Tailoring & Garments',
     current_livelihood: 'Local Garment Shop Helper',
     mobility_km: 10,
-    preference: 'Wage Employment'
+    preference: 'Wage Employment (Job)',
+    interests: 'Industrial Sewing, Quality Inspection, Solar Tech'
   });
 
-  const [selectedLang, setSelectedLang] = useState('hi');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+
+  // Enrolled courses state (defaults with Sewing Machine Operator for rich out-of-the-box experience)
+  const [enrolledCourses, setEnrolledCourses] = useState([
+    ENRICHED_NSQF_CATALOG[0]
+  ]);
+  const [enrolledMicroModules, setEnrolledMicroModules] = useState(['micro_soft_skills']);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -49,25 +70,64 @@ function App() {
     setProfile({
       ...persona.profile,
       name: persona.name,
-      district: persona.district
+      district: persona.district,
+      phone: persona.phone || '9876543210'
     });
   };
 
   const handleResetAll = () => {
     setProfile({
-      name: 'New Beneficiary',
-      district: 'District Hub',
-      education_level: '',
-      traditional_trade: '',
-      current_livelihood: '',
+      name: 'Ravi Kumar',
+      phone: '9876543210',
+      district: 'Varanasi, UP',
+      education_level: '10th Grade',
+      traditional_trade: 'Tailoring & Garments',
+      current_livelihood: 'Local Garment Shop Helper',
       mobility_km: 10,
-      preference: 'Wage Employment'
+      preference: 'Wage Employment (Job)',
+      interests: 'Industrial Sewing'
     });
+    setEnrolledCourses([ENRICHED_NSQF_CATALOG[0]]);
+    setActiveSection('home');
+  };
+
+  const handleLoginSuccess = (newProfile) => {
+    setProfile(newProfile);
+    setIsAuthenticated(true);
+    setShowAuthModal(false);
+    setActiveSection('home');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setActiveSection('home');
+  };
+
+  const handleEnrollSuccess = (courses, microModules, appId) => {
+    setEnrolledCourses(prev => {
+      const existingIds = prev.map(c => c.id);
+      const newAdditions = courses.filter(c => !existingIds.includes(c.id));
+      return [...prev, ...newAdditions];
+    });
+    if (microModules) {
+      setEnrolledMicroModules(microModules);
+    }
   };
 
   const handleSearchSubmit = () => {
     setActiveSection('courses');
   };
+
+  // ENTRANCE GATE: Show Login and Sign Up Page before reaching the Dashboard
+  if (!isAuthenticated) {
+    return (
+      <LoginPage
+        onLoginSuccess={handleLoginSuccess}
+        selectedLang={selectedLang}
+        onSelectLang={setSelectedLang}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f2f5f3] text-slate-800 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
@@ -79,32 +139,37 @@ function App() {
         isOnline={isOnline}
         currentProfile={profile}
         onSearchSubmit={handleSearchSubmit}
+        onOpenAuth={() => setShowAuthModal(true)}
+        onLogout={handleLogout}
       />
 
       {/* Main Container with Sidebar + Dynamic Full-Page Content */}
       <div className="flex-1 flex w-full max-w-[1720px] mx-auto">
-        {/* Left Sidebar Navigation with functional links */}
+        {/* Left Sidebar Navigation */}
         <Sidebar
           activeSection={activeSection}
           onSelectSection={setActiveSection}
           onOpenReport={() => setShowReportModal(true)}
           onResetAll={handleResetAll}
           onOpenHelp={() => {}}
-          courseCount={4}
+          onOpenAuth={() => setShowAuthModal(true)}
+          onLogout={handleLogout}
+          courseCount={ENRICHED_NSQF_CATALOG.length}
           centerCount={4}
         />
 
         {/* Main Content Area */}
         <main className="flex-1 p-3 sm:p-5 lg:p-6 overflow-x-hidden flex flex-col">
           {/* Mobile Top Navigation Pills */}
-          <div className="lg:hidden flex mb-4 bg-white p-1.5 rounded-2xl border border-slate-200 overflow-x-auto gap-1.5 shadow-xs">
+          <div className="lg:hidden flex mb-4 bg-white p-1.5 rounded-2xl border border-slate-200 overflow-x-auto gap-1.5 shadow-xs scrollbar-none">
             {[
-              { id: 'courses', label: 'NSQF Packs (4)', icon: BookOpen },
-              { id: 'subsidies', label: 'Subsidies', icon: Building2 },
-              { id: 'centers', label: 'Centers (4)', icon: MapPin },
-              { id: 'home', label: 'Home', icon: LayoutDashboard },
-              { id: 'assistant', label: 'Voice AI', icon: Mic },
-              { id: 'profile', label: 'Profile', icon: UserCheck }
+              { id: 'home', label: t('home', 'Overview Dashboard'), icon: LayoutDashboard },
+              { id: 'my_learning', label: t('my_learning', 'Personal Dashboard'), icon: Briefcase },
+              { id: 'assistant', label: t('assistant', 'AI Voice Profiler'), icon: Mic },
+              { id: 'courses', label: t('courses', 'Recommended NSQF Packs'), icon: BookOpen },
+              { id: 'subsidies', label: t('subsidies', 'PM-AJAY Subsidies'), icon: Building2 },
+              { id: 'centers', label: t('centers', 'Training Centers'), icon: MapPin },
+              { id: 'profile', label: t('profile', 'Beneficiary Profile'), icon: UserCheck }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeSection === tab.id;
@@ -137,142 +202,137 @@ function App() {
                 showHero={true}
               />
 
-              {/* Side-by-Side Quick Split on Home: Voice Assistant & Quick Access */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-                <div className="lg:col-span-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">Voice Agent Quick Access</span>
-                    <button 
-                      onClick={() => setActiveSection('assistant')} 
-                      className="text-xs text-emerald-700 hover:text-emerald-800 font-bold cursor-pointer"
-                    >
-                      Open Full Page →
-                    </button>
+              {/* 3-Column Fast Action Launchers */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* 1. Voice AI Profiler */}
+                <div 
+                  onClick={() => setActiveSection('assistant')}
+                  className="clay-card p-5 bg-gradient-to-tr from-emerald-900 to-slate-900 text-white cursor-pointer hover:border-emerald-400 group transition relative overflow-hidden"
+                >
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3 border border-emerald-400/30">
+                    <Mic className="w-5 h-5 animate-pulse" />
                   </div>
-                  <AudioRecorder 
-                    onProfileUpdate={(updated) => setProfile(prev => ({ ...prev, ...updated }))} 
-                    activeLanguage={selectedLang}
-                    currentProfile={profile}
-                  />
+                  <h4 className="font-extrabold text-white text-base group-hover:text-emerald-300 transition-colors">
+                    🎙️ {t('aiVoiceProfilerCardTitle', 'AI Voice Profiler')}
+                  </h4>
+                  <p className="text-xs text-slate-300 mt-1">
+                    {t('aiVoiceProfilerCardDesc', 'Ajay Saathi asks 6 simple questions to discover your ideal NSQF courses.')}
+                  </p>
+                  <div className="mt-4 text-xs font-bold text-emerald-400 flex items-center">
+                    <span>{t('startVoiceAssessment', 'Start Voice Assessment')}</span>
+                    <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
+                  </div>
                 </div>
 
-                <div className="lg:col-span-7">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">PM-AJAY Fast Links</span>
-                    <span className="text-xs text-slate-400">Quick Navigation</span>
+                {/* 2. Personal Learning Dashboard */}
+                <div 
+                  onClick={() => setActiveSection('my_learning')}
+                  className="clay-card p-5 bg-white cursor-pointer hover:border-orange-300 group transition"
+                >
+                  <div className="w-10 h-10 rounded-2xl bg-orange-100 text-orange-700 flex items-center justify-center mb-3">
+                    <Briefcase className="w-5 h-5" />
                   </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    <div 
-                      onClick={() => setActiveSection('courses')}
-                      className="clay-card p-5 cursor-pointer hover:border-emerald-300 group transition"
-                    >
-                      <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-3">
-                        <BookOpen className="w-5 h-5" />
-                      </div>
-                      <h4 className="font-bold text-slate-900 text-sm group-hover:text-emerald-800">
-                        Recommended NSQF Packs
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-1">
-                        4 tailored skilling programs matching your trade with ₹1,500/mo DBT.
-                      </p>
-                      <div className="mt-3 text-xs font-bold text-emerald-700 flex items-center">
-                        <span>Browse Courses</span>
-                        <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-                      </div>
-                    </div>
+                  <h4 className="font-extrabold text-slate-900 text-base group-hover:text-orange-800 transition-colors">
+                    📊 {t('personalDashboardCardTitle', 'Personal Dashboard & Job Readiness')}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {t('personalDashboardCardDesc', 'Track your enrolled courses, pending vs completed skills, and placement company readiness.')}
+                  </p>
+                  <div className="mt-4 text-xs font-bold text-orange-700 flex items-center">
+                    <span>{t('openLearningHub', 'Open My Learning Hub')}</span>
+                    <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
+                  </div>
+                </div>
 
-                    <div 
-                      onClick={() => setActiveSection('centers')}
-                      className="clay-card p-5 cursor-pointer hover:border-emerald-300 group transition"
-                    >
-                      <div className="w-10 h-10 rounded-2xl bg-orange-100 text-orange-700 flex items-center justify-center mb-3">
-                        <MapPin className="w-5 h-5" />
-                      </div>
-                      <h4 className="font-bold text-slate-900 text-sm group-hover:text-orange-800">
-                        Training Centers Directory
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Locate 4 certified training hubs in your district with open batches.
-                      </p>
-                      <div className="mt-3 text-xs font-bold text-orange-700 flex items-center">
-                        <span>Find Nearest Hub</span>
-                        <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-                      </div>
-                    </div>
-
-                    <div 
-                      onClick={() => setActiveSection('subsidies')}
-                      className="clay-card p-5 cursor-pointer hover:border-emerald-300 group transition"
-                    >
-                      <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center mb-3">
-                        <Building2 className="w-5 h-5" />
-                      </div>
-                      <h4 className="font-bold text-slate-900 text-sm group-hover:text-amber-800">
-                        PM-AJAY Subsidies & Grants
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Capital subsidy up to ₹50,000 and free professional toolkits.
-                      </p>
-                      <div className="mt-3 text-xs font-bold text-amber-700 flex items-center">
-                        <span>Explore Subsidies</span>
-                        <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-                      </div>
-                    </div>
-
-                    <div 
-                      onClick={() => setShowReportModal(true)}
-                      className="clay-card p-5 cursor-pointer hover:border-emerald-300 group transition"
-                    >
-                      <div className="w-10 h-10 rounded-2xl bg-orange-100 text-orange-800 flex items-center justify-center mb-3">
-                        <FileText className="w-5 h-5" />
-                      </div>
-                      <h4 className="font-bold text-slate-900 text-sm group-hover:text-orange-800">
-                        Assessment Dossier
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-1">
-                        View & print your official government beneficiary card.
-                      </p>
-                      <div className="mt-3 text-xs font-bold text-orange-700 flex items-center">
-                        <span>Print Dossier</span>
-                        <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-                      </div>
-                    </div>
+                {/* 3. Recommended NSQF Packs */}
+                <div 
+                  onClick={() => setActiveSection('courses')}
+                  className="clay-card p-5 bg-white cursor-pointer hover:border-emerald-300 group transition"
+                >
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-3">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <h4 className="font-extrabold text-slate-900 text-base group-hover:text-emerald-800 transition-colors">
+                    🎓 {t('multiCourseCardTitle', 'Multi-Course Enrollment')}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {t('multiCourseCardDesc', 'Select and enroll in multiple NSQF courses with monthly DBT stipends and free toolkits.')}
+                  </p>
+                  <div className="mt-4 text-xs font-bold text-emerald-700 flex items-center">
+                    <span>{t('exploreCoursesCenters', 'Explore Courses & Centers')}</span>
+                    <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* VIEW 2: FULL-PAGE RECOMMENDED NSQF PACKS */}
-          {activeSection === 'courses' && (
+          {/* VIEW 2: AI VOICE ASSISTANT INTERACTION (FLOW 2) */}
+          {activeSection === 'assistant' && (
             <div className="space-y-4 animate-in fade-in duration-200 w-full">
               <div className="flex items-center space-x-2 text-xs text-slate-500">
                 <button onClick={() => setActiveSection('home')} className="hover:text-slate-800 flex items-center cursor-pointer">
-                  <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Home
+                  <ArrowLeft className="w-3.5 h-3.5 mr-1" /> {t('home', 'Home')}
                 </button>
                 <span>/</span>
-                <span className="font-bold text-slate-800">Recommended Packs</span>
+                <span className="font-bold text-slate-800">{t('assistant', 'AI Voice Profiler')}</span>
               </div>
-              <BeneficiaryDashboard 
+              <AIAssistantView
                 profile={profile}
                 onUpdateProfile={(updated) => setProfile(prev => ({ ...prev, ...updated }))}
-                activeTab="courses"
-                onSelectTab={setActiveSection}
-                showHero={false}
+                onProceedToRecommendations={() => setActiveSection('courses')}
+                activeLanguage={selectedLang}
               />
             </div>
           )}
 
-          {/* VIEW 3: FULL-PAGE PM-AJAY SUBSIDIES */}
+          {/* VIEW 3: SMART RECOMMENDATIONS & MULTI-ENROLLMENT (FLOW 3 & 4) */}
+          {activeSection === 'courses' && (
+            <div className="space-y-4 animate-in fade-in duration-200 w-full">
+              <div className="flex items-center space-x-2 text-xs text-slate-500">
+                <button onClick={() => setActiveSection('home')} className="hover:text-slate-800 flex items-center cursor-pointer">
+                  <ArrowLeft className="w-3.5 h-3.5 mr-1" /> {t('home', 'Home')}
+                </button>
+                <span>/</span>
+                <span className="font-bold text-slate-800">{t('courses', 'Recommended NSQF Packs')}</span>
+              </div>
+              <RecommendationsView
+                profile={profile}
+                enrolledCourseIds={enrolledCourses.map(c => c.id)}
+                onEnrollSuccess={handleEnrollSuccess}
+                onNavigateToDashboard={() => setActiveSection('my_learning')}
+              />
+            </div>
+          )}
+
+          {/* VIEW 4: PERSONAL DASHBOARD (FLOW 5) */}
+          {activeSection === 'my_learning' && (
+            <div className="space-y-4 animate-in fade-in duration-200 w-full">
+              <div className="flex items-center space-x-2 text-xs text-slate-500">
+                <button onClick={() => setActiveSection('home')} className="hover:text-slate-800 flex items-center cursor-pointer">
+                  <ArrowLeft className="w-3.5 h-3.5 mr-1" /> {t('home', 'Home')}
+                </button>
+                <span>/</span>
+                <span className="font-bold text-slate-800">{t('my_learning', 'Personal Learning Dashboard')}</span>
+              </div>
+              <PersonalDashboardView
+                profile={profile}
+                enrolledCourses={enrolledCourses}
+                onExploreMoreCourses={() => setActiveSection('courses')}
+                onOpenReportModal={() => setShowReportModal(true)}
+              />
+            </div>
+          )}
+
+          {/* VIEW 5: FULL-PAGE PM-AJAY SUBSIDIES */}
           {activeSection === 'subsidies' && (
             <div className="space-y-4 animate-in fade-in duration-200 w-full">
               <div className="flex items-center space-x-2 text-xs text-slate-500">
                 <button onClick={() => setActiveSection('home')} className="hover:text-slate-800 flex items-center cursor-pointer">
-                  <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Home
+                  <ArrowLeft className="w-3.5 h-3.5 mr-1" /> {t('home', 'Home')}
                 </button>
                 <span>/</span>
-                <span className="font-bold text-slate-800">PM-AJAY Subsidies</span>
+                <span className="font-bold text-slate-800">{t('subsidies', 'PM-AJAY Subsidies')}</span>
               </div>
               <BeneficiaryDashboard 
                 profile={profile}
@@ -284,15 +344,15 @@ function App() {
             </div>
           )}
 
-          {/* VIEW 4: FULL-PAGE TRAINING CENTERS DIRECTORY */}
+          {/* VIEW 6: FULL-PAGE TRAINING CENTERS DIRECTORY */}
           {activeSection === 'centers' && (
             <div className="space-y-4 animate-in fade-in duration-200 w-full">
               <div className="flex items-center space-x-2 text-xs text-slate-500">
                 <button onClick={() => setActiveSection('home')} className="hover:text-slate-800 flex items-center cursor-pointer">
-                  <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Home
+                  <ArrowLeft className="w-3.5 h-3.5 mr-1" /> {t('home', 'Home')}
                 </button>
                 <span>/</span>
-                <span className="font-bold text-slate-800">Training Centers</span>
+                <span className="font-bold text-slate-800">{t('centers', 'Training Centers Directory')}</span>
               </div>
               <BeneficiaryDashboard 
                 profile={profile}
@@ -304,35 +364,15 @@ function App() {
             </div>
           )}
 
-          {/* VIEW 5: FULL-PAGE VOICE AI ASSISTANT */}
-          {activeSection === 'assistant' && (
-            <div className="space-y-4 animate-in fade-in duration-200 w-full">
-              <div className="flex items-center space-x-2 text-xs text-slate-500">
-                <button onClick={() => setActiveSection('home')} className="hover:text-slate-800 flex items-center cursor-pointer">
-                  <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Home
-                </button>
-                <span>/</span>
-                <span className="font-bold text-slate-800">Voice Assistant</span>
-              </div>
-              <div className="max-w-4xl mx-auto w-full">
-                <AudioRecorder 
-                  onProfileUpdate={(updated) => setProfile(prev => ({ ...prev, ...updated }))} 
-                  activeLanguage={selectedLang}
-                  currentProfile={profile}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* VIEW 6: FULL-PAGE SKILL PROFILE */}
+          {/* VIEW 7: FULL-PAGE SKILL PROFILE DOSSIER */}
           {activeSection === 'profile' && (
             <div className="space-y-4 animate-in fade-in duration-200 w-full">
               <div className="flex items-center space-x-2 text-xs text-slate-500">
                 <button onClick={() => setActiveSection('home')} className="hover:text-slate-800 flex items-center cursor-pointer">
-                  <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Home
+                  <ArrowLeft className="w-3.5 h-3.5 mr-1" /> {t('home', 'Home')}
                 </button>
                 <span>/</span>
-                <span className="font-bold text-slate-800">Skill Profile Assessment</span>
+                <span className="font-bold text-slate-800">{t('profile', 'Beneficiary Profile Dossier')}</span>
               </div>
               <BeneficiaryDashboard 
                 profile={profile}
@@ -345,6 +385,15 @@ function App() {
           )}
         </main>
       </div>
+
+      {/* Auth Modal (Mobile OTP & Voice Registration) */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLoginSuccess={handleLoginSuccess}
+        selectedLang={selectedLang}
+        onSelectLang={setSelectedLang}
+      />
 
       {/* Printable Assessment Modal */}
       {showReportModal && (

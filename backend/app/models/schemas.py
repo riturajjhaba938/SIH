@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Union
 
 class BeneficiaryProfile(BaseModel):
     education_level: Optional[str] = None
@@ -38,3 +38,16 @@ class TTSRequest(BaseModel):
 
 class TTSResponse(BaseModel):
     audio_base64: str = Field(..., description="Base64 encoded audio of the synthesized text")
+
+class TranslateRequest(BaseModel):
+    text: Union[str, List[str]] = Field(..., description="Text or list of texts to translate")
+    source: Optional[str] = Field("en", description="Source language code (e.g., 'en')")
+    target: str = Field("hi", description="Target language code (e.g., 'hi')")
+    format: Optional[str] = Field("text", description="Format of the text: 'text' or 'html'")
+
+class TranslateResponse(BaseModel):
+    translatedText: Union[str, List[str]]
+    source: str
+    target: str
+    status: str
+
