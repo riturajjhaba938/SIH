@@ -44,13 +44,13 @@ export default function Login({ onLoginSuccess }) {
       });
       const data = await res.json();
       if (data.status === 'success') {
-        onLoginSuccess(phone);
+        onLoginSuccess(phone, data.is_new_user);
       } else {
         setError(data.message || 'Invalid OTP');
       }
     } catch (err) {
       // Fallback for mock demo
-      if (otp === '1234') onLoginSuccess(phone);
+      if (otp === '1234') onLoginSuccess(phone, !phone.startsWith("99"));
       else setError('Invalid OTP. Try 1234.');
     }
   };
@@ -58,8 +58,8 @@ export default function Login({ onLoginSuccess }) {
   return (
     <div className="max-w-md mx-auto mt-20 p-8 border border-slate-200 bg-white shadow-md rounded-2xl">
       <div className="text-center mb-10">
-        <h1 className="text-4xl heading-editorial mb-3">PM-AJAY</h1>
-        <p className="text-gray-500 uppercase tracking-widest text-sm">Voice Registration</p>
+        <h1 className="text-4xl heading-editorial mb-3">AJAY-Sathi</h1>
+        <p className="text-gray-500 uppercase tracking-widest text-sm">Registration</p>
       </div>
 
       {error && (
@@ -98,6 +98,13 @@ export default function Login({ onLoginSuccess }) {
             className="w-full bg-[#138808] text-white font-semibold py-4 hover:opacity-90 transition-opacity uppercase tracking-wider text-sm mt-4 rounded-xl"
           >
             Verify OTP
+          </button>
+          <button 
+            type="button"
+            onClick={() => setStep('PHONE')}
+            className="w-full bg-transparent text-gray-500 font-semibold py-3 hover:text-black transition-colors uppercase tracking-wider text-xs mt-2"
+          >
+            ← Back to Phone
           </button>
         </form>
       )}

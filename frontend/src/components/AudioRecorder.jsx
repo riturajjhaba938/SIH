@@ -97,7 +97,14 @@ export default function AudioRecorder({ onProfileUpdate, activeLanguage = 'hi', 
 
   // Graceful client fallback for demo robustness
   const handleClientSideFallback = useCallback((blob, textFallback) => {
-    const inputStr = textFallback || "I studied up to 10th grade and know tailoring. Want wage employment.";
+    if (!textFallback && blob) {
+      setStatusMsg('Could not transcribe audio. Backend error.');
+      setStatusType('error');
+      setIsLoading(false);
+      setTimeout(() => setStatusMsg(''), 3000);
+      return;
+    }
+    const inputStr = textFallback || "";
     const lower = inputStr.toLowerCase();
     
     let updated = { ...currentProfile };
@@ -191,7 +198,28 @@ export default function AudioRecorder({ onProfileUpdate, activeLanguage = 'hi', 
         onProfileUpdate(data.current_profile);
       }
 
-      if (data.audio_base64) {
+      if ('speechSynthesis' in window && data.bot_response_text) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(data.bot_response_text);
+        const langMap = {
+          hi: 'hi-IN', bn: 'bn-IN', te: 'te-IN', mr: 'mr-IN', 
+          ta: 'ta-IN', ur: 'ur-IN', gu: 'gu-IN', kn: 'kn-IN', 
+          or: 'or-IN', ml: 'ml-IN', pa: 'pa-IN', as: 'as-IN', en: 'en-US'
+        };
+        const langCode = langMap[activeLanguage] || 'en-US';
+        utterance.lang = langCode;
+        
+        setIsBotSpeaking(true);
+        utterance.onend = () => setIsBotSpeaking(false);
+        utterance.onerror = () => setIsBotSpeaking(false);
+        
+        const voices = window.speechSynthesis.getVoices();
+        const voice = voices.find(v => v.lang === langCode || v.lang.startsWith(activeLanguage));
+        if (voice) {
+          utterance.voice = voice;
+        }
+        window.speechSynthesis.speak(utterance);
+      } else if (data.audio_base64) {
         playAudioBase64(data.audio_base64);
       }
 

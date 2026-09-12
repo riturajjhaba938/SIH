@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { ENRICHED_NSQF_CATALOG, SCHEME_COMPONENTS } from '../data/mockProfiles';
 import EnrollmentModal from './EnrollmentModal';
+import { useTranslation } from '../contexts/TranslationContext';
 import farmerImg from '../assets/happy-smiling-indian-farmer-with-tractor-real-farming-life-rural-india_1257902-6315.avif';
 import childrenImg from '../assets/Children.png';
 import pmajayLogo from '../assets/PM-AJAY.png';
@@ -35,12 +36,29 @@ export default function BeneficiaryDashboard({
   onSelectTab,
   showHero = true 
 }) {
+  const { t } = useTranslation();
   const [recommendations, setRecommendations] = useState([]);
   const [currentTab, setCurrentTab] = useState(activeTab);
   const [selectedCourseForEnroll, setSelectedCourseForEnroll] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editFormData, setEditFormData] = useState(profile);
+  const [districtCenterCount, setDistrictCenterCount] = useState(0);
+
+  useEffect(() => {
+    if (currentTab === 'centers' && profile?.district) {
+      fetch(`http://localhost:8000/api/v1/training-centers/stats?district=${encodeURIComponent(profile.district)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success') {
+            setDistrictCenterCount(data.count);
+          } else {
+            setDistrictCenterCount(0);
+          }
+        })
+        .catch(err => console.error(err));
+    }
+  }, [currentTab, profile?.district]);
 
   // Synchronize with parent activeTab prop
   useEffect(() => {
@@ -149,13 +167,13 @@ export default function BeneficiaryDashboard({
             <div className="relative z-10">
               <div className="flex items-center space-x-2 text-xs font-bold text-orange-700 uppercase tracking-wider mb-2">
                 <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-                <span>PM-AJAY Skill Development Mission</span>
+                <span>{t("PM-AJAY Skill Development Mission")}</span>
                 <span className="hidden sm:inline text-slate-300">•</span>
-                <span className="hidden sm:inline text-emerald-800 font-semibold">Government of India</span>
+                <span className="hidden sm:inline text-emerald-800 font-semibold">{t("Government of India")}</span>
               </div>
               
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center space-x-2">
-                <span>Namaste, {profile?.name || 'Beneficiary'}</span>
+                <span>{t('Namaste')}, {profile?.name || 'Beneficiary'}</span>
                 <Sparkles className="w-5 h-5 text-orange-600 inline shrink-0" />
               </h2>
               <p className="text-sm font-semibold text-slate-700 mt-1.5 max-w-md">
@@ -180,7 +198,7 @@ export default function BeneficiaryDashboard({
           {/* Right 1 Col: "Your Progress" Widget */}
           <div className="clay-card p-5 flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-bold text-slate-900">Your Progress</h3>
+              <h3 className="text-sm font-bold text-slate-900">{t("Your Progress")}</h3>
               <button
                 onClick={() => setIsEditingProfile(!isEditingProfile)}
                 className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition cursor-pointer"
@@ -217,7 +235,7 @@ export default function BeneficiaryDashboard({
               <div className="space-y-1.5 text-[11px]">
                 <div className="flex items-center space-x-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="font-semibold text-slate-800">Profile Extracted</span>
+                  <span className="font-semibold text-slate-800">{t("Profile Extracted")}</span>
                 </div>
                 <div className="flex items-center space-x-1.5">
                   <CheckCircle2 className={`w-3.5 h-3.5 ${filledFieldsCount >= 3 ? 'text-emerald-600' : 'text-slate-300'}`} />
@@ -236,7 +254,7 @@ export default function BeneficiaryDashboard({
 
             <div className="text-[10px] text-slate-500 bg-[#f8faf9] p-2 rounded-xl border border-slate-200/60 flex items-center justify-between">
               <span>{filledFieldsCount} of 5 slots captured</span>
-              <span className="text-emerald-700 font-bold">NSQF Ready</span>
+              <span className="text-emerald-700 font-bold">{t("NSQF Ready")}</span>
             </div>
           </div>
         </div>
@@ -248,7 +266,7 @@ export default function BeneficiaryDashboard({
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold text-slate-900 flex items-center space-x-1">
               <Edit3 className="w-3.5 h-3.5 text-orange-600" />
-              <span>Manual Profile Adjustment:</span>
+              <span>{t("Manual Profile Adjustment:")}</span>
             </span>
             <button 
               type="button" 
@@ -258,9 +276,19 @@ export default function BeneficiaryDashboard({
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-3">
             <div>
-              <label className="block text-slate-500 mb-1">Education Level</label>
+              <label className="block text-slate-500 mb-1">{t("District")}</label>
+              <input 
+                type="text" 
+                value={editFormData.district || ''} 
+                onChange={e => setEditFormData({ ...editFormData, district: e.target.value })}
+                placeholder="e.g. Surat"
+                className="w-full px-3 py-1.5 bg-[#f8faf9] border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              />
+            </div>
+            <div>
+              <label className="block text-slate-500 mb-1">{t("Education Level")}</label>
               <input 
                 type="text" 
                 value={editFormData.education_level || ''} 
@@ -270,7 +298,7 @@ export default function BeneficiaryDashboard({
               />
             </div>
             <div>
-              <label className="block text-slate-500 mb-1">Traditional Trade</label>
+              <label className="block text-slate-500 mb-1">{t("Traditional Trade")}</label>
               <input 
                 type="text" 
                 value={editFormData.traditional_trade || ''} 
@@ -280,14 +308,14 @@ export default function BeneficiaryDashboard({
               />
             </div>
             <div>
-              <label className="block text-slate-500 mb-1">Job Preference</label>
+              <label className="block text-slate-500 mb-1">{t("Job Preference")}</label>
               <select
                 value={editFormData.preference || 'Wage Employment'}
                 onChange={e => setEditFormData({ ...editFormData, preference: e.target.value })}
                 className="w-full px-3 py-1.5 bg-[#f8faf9] border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-1 focus:ring-orange-500"
               >
-                <option value="Wage Employment">Wage Employment</option>
-                <option value="Self-Employment">Self-Employment</option>
+                <option value="Wage Employment">{t("Wage Employment")}</option>
+                <option value="Self-Employment">{t("Self-Employment")}</option>
               </select>
             </div>
           </div>
@@ -304,7 +332,7 @@ export default function BeneficiaryDashboard({
               className="clay-btn clay-btn-saffron px-4 py-1.5 text-xs font-bold transition flex items-center space-x-1 cursor-pointer"
             >
               <Check className="w-3.5 h-3.5" />
-              <span>Save Changes</span>
+              <span>{t("Save Changes")}</span>
             </button>
           </div>
         </form>
@@ -316,7 +344,7 @@ export default function BeneficiaryDashboard({
           <div className="clay-peach p-3.5 rounded-2xl">
             <div className="flex items-center space-x-1.5 text-orange-700">
               <GraduationCap className="w-4 h-4" />
-              <span className="text-[10px] uppercase font-bold tracking-wider">Education</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t("Education")}</span>
             </div>
             <div className="text-xs font-bold text-slate-900 mt-1 truncate">
               {profile.education_level || 'Not provided'}
@@ -326,7 +354,7 @@ export default function BeneficiaryDashboard({
           <div className="clay-amber p-3.5 rounded-2xl">
             <div className="flex items-center space-x-1.5 text-amber-800">
               <Briefcase className="w-4 h-4" />
-              <span className="text-[10px] uppercase font-bold tracking-wider">Trade</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t("Trade")}</span>
             </div>
             <div className="text-xs font-bold text-slate-900 mt-1 truncate">
               {profile.traditional_trade || 'Not provided'}
@@ -336,7 +364,7 @@ export default function BeneficiaryDashboard({
           <div className="clay-mint p-3.5 rounded-2xl">
             <div className="flex items-center space-x-1.5 text-emerald-800">
               <Target className="w-4 h-4" />
-              <span className="text-[10px] uppercase font-bold tracking-wider">Occupation</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t("Occupation")}</span>
             </div>
             <div className="text-xs font-bold text-slate-900 mt-1 truncate">
               {profile.current_livelihood || 'Not provided'}
@@ -346,7 +374,7 @@ export default function BeneficiaryDashboard({
           <div className="clay-card p-3.5 rounded-2xl border-orange-200/70 bg-gradient-to-br from-white to-orange-50/50">
             <div className="flex items-center space-x-1.5 text-orange-700">
               <Compass className="w-4 h-4" />
-              <span className="text-[10px] uppercase font-bold tracking-wider">Mobility</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t("Mobility")}</span>
             </div>
             <div className="text-xs font-bold text-slate-900 mt-1 truncate">
               {profile.mobility_km ? `${profile.mobility_km} km radius` : '10 km'}
@@ -356,7 +384,7 @@ export default function BeneficiaryDashboard({
           <div className="clay-mint p-3.5 rounded-2xl col-span-2 sm:col-span-1">
             <div className="flex items-center space-x-1.5 text-emerald-800">
               <Coins className="w-4 h-4" />
-              <span className="text-[10px] uppercase font-bold tracking-wider">Preference</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t("Preference")}</span>
             </div>
             <div className="text-xs font-bold text-slate-900 mt-1 truncate">
               {profile.preference || 'Wage Job'}
@@ -404,7 +432,7 @@ export default function BeneficiaryDashboard({
                   : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
               }`}
             >
-              Recommended NSQF Packs ({filteredRecommendations.length})
+              {t('Recommended NSQF Packs')} ({filteredRecommendations.length})
             </button>
             
             <button
@@ -533,7 +561,7 @@ export default function BeneficiaryDashboard({
                         onClick={() => setSelectedCourseForEnroll(rec)}
                         className="clay-btn clay-btn-saffron px-5 py-2 text-xs font-bold flex items-center space-x-1 cursor-pointer"
                       >
-                        <span>Enroll Now</span>
+                        <span>{t("Enroll Now")}</span>
                         <ChevronRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -543,7 +571,7 @@ export default function BeneficiaryDashboard({
             ) : (
               <div className="p-8 text-center rounded-3xl bg-[#f8faf9] border border-slate-200">
                 <AlertCircle className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <h4 className="text-sm font-bold text-slate-700">No NSQF Courses Found</h4>
+                <h4 className="text-sm font-bold text-slate-700">{t("No NSQF Courses Found")}</h4>
                 <p className="text-xs text-slate-500 mt-1">
                   Try speaking to the assistant or updating the search filter.
                 </p>
@@ -587,7 +615,7 @@ export default function BeneficiaryDashboard({
                 <div className="flex items-center space-x-2 shrink-0">
                   <span className="px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold border border-emerald-200 flex items-center space-x-1 shadow-2xs">
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>Active Scheme</span>
+                    <span>{t("Active Scheme")}</span>
                   </span>
                 </div>
               </div>
@@ -622,7 +650,7 @@ export default function BeneficiaryDashboard({
               <div className="flex-1 space-y-2">
                 <div className="flex items-center space-x-2 text-xs font-bold text-emerald-800 uppercase tracking-wider">
                   <HeartHandshake className="w-4 h-4 text-emerald-700" />
-                  <span>Socio-Economic Transformation</span>
+                  <span>{t("Socio-Economic Transformation")}</span>
                 </div>
                 <h4 className="text-base sm:text-lg font-extrabold text-slate-900">
                   Building Brighter Futures for Families & Youth
@@ -683,7 +711,7 @@ export default function BeneficiaryDashboard({
                 </p>
               </div>
               <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                4 Centers Located
+                {districtCenterCount > 0 ? `${districtCenterCount} Centers in ${profile.district}` : '4 Centers Located'}
               </span>
             </div>
 

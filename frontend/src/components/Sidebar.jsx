@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../contexts/TranslationContext';
 import { 
   Home, 
   Mic, 
@@ -23,16 +24,19 @@ export default function Sidebar({
   courseCount = 4,
   centerCount = 4
 }) {
+  const { t } = useTranslation();
+
   const primaryServices = [
-    { id: 'courses', label: 'Recommended NSQF Packs', icon: BookOpen, badge: courseCount, color: 'text-emerald-800 bg-emerald-100' },
-    { id: 'subsidies', label: 'PM-AJAY Subsidies', icon: Building2, badge: 'Grants', color: 'text-orange-800 bg-orange-100' },
-    { id: 'centers', label: 'Training Centers', icon: MapPin, badge: centerCount, color: 'text-amber-800 bg-amber-100' },
+    { id: 'courses', label: t('Recommended NSQF Packs'), icon: BookOpen, badge: courseCount, color: 'text-emerald-800 bg-emerald-100' },
+    { id: 'subsidies', label: t('PM-AJAY Subsidies'), icon: Building2, badge: 'Grants', color: 'text-orange-800 bg-orange-100' },
+    { id: 'centers', label: t('Training Centers'), icon: MapPin, badge: centerCount, color: 'text-amber-800 bg-amber-100' },
   ];
 
   const tools = [
-    { id: 'home', label: 'Overview Dashboard', icon: Home },
-    { id: 'assistant', label: 'Voice AI Profiler', icon: Mic, badge: 'Live' },
-    { id: 'profile', label: 'Beneficiary Profile', icon: UserCheck },
+    { id: 'home', label: t('Overview Dashboard'), icon: Home },
+    { id: 'assistant', label: t('Voice AI Profiler'), icon: Mic, badge: 'Live' },
+    { id: 'profile', label: t('Beneficiary Profile'), icon: UserCheck },
+    { id: 'registration', label: t('Registration Form'), icon: FileText },
   ];
 
   return (

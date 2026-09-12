@@ -1,16 +1,31 @@
 import base64
 import os
+from groq import Groq
 
 class BhashiniConnector:
     def __init__(self):
         self.api_key = os.getenv("BHASHINI_API_KEY")
         self.endpoint = os.getenv("BHASHINI_ENDPOINT")
+        self.groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-    def transcribe_audio(self, audio_bytes: bytes, language: str) -> str:
-        # MOCK IMPLEMENTATION
-        # In a real scenario, we would send audio_bytes to the ASR endpoint
-        print(f"Mock ASR: Transcribing {len(audio_bytes)} bytes of audio in {language}")
-        return "I have studied up to 10th grade and I work as a tailor."
+    def transcribe_audio(self, audio_bytes: bytes, language: str, prompt: str = None) -> str:
+        try:
+            lang = language.split("-")[0] if language else "en"
+            kwargs = {
+                "file": ("audio.wav", audio_bytes),
+                "model": "whisper-large-v3-turbo",
+                "language": lang,
+                "response_format": "verbose_json",
+                "temperature": 0.0
+            }
+            if prompt:
+                kwargs["prompt"] = prompt
+                
+            response = self.groq_client.audio.transcriptions.create(**kwargs)
+            return response.text
+        except Exception as e:
+            print(f"Groq ASR Error: {e}")
+            raise e
 
     def synthesize_text(self, text: str, language: str) -> str:
         # MOCK IMPLEMENTATION

@@ -4,8 +4,8 @@ import Navbar from './components/Navbar';
 import AudioRecorder from './components/AudioRecorder';
 import BeneficiaryDashboard from './components/BeneficiaryDashboard';
 import BeneficiaryReportModal from './components/BeneficiaryReportModal';
-import Login from './components/Login';
 import Registration from './components/Registration';
+import Login from './components/Login';
 import { 
   Mic, 
   LayoutDashboard, 
@@ -17,36 +17,29 @@ import {
   FileText
 } from 'lucide-react';
 import './index.css';
+import { TranslationProvider, useTranslation } from './contexts/TranslationContext';
 
-function App() {
-  const [appState, setAppState] = useState('LOGIN');
-  const [phone, setPhone] = useState('');
-
-  const handleLoginSuccess = (verifiedPhone) => {
-    setPhone(verifiedPhone);
-    setAppState('REGISTRATION');
-  };
-
-  const handleRegistrationSuccess = () => {
-    setAppState('DASHBOARD');
-  };
-
+function MainApp({ selectedLang, onSelectLang }) {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState({
-    name: 'Ramesh Kumar',
-    district: 'Varanasi, UP',
-    education_level: '10th Grade',
-    traditional_trade: 'Tailoring',
-    current_livelihood: 'Local Garment Shop Helper',
+    name: 'New Beneficiary',
+    district: '',
+    education_level: '',
+    traditional_trade: '',
+    current_livelihood: '',
     mobility_km: 10,
-    preference: 'Wage Employment'
+    preference: ''
   });
 
-  const [selectedLang, setSelectedLang] = useState('hi');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showReportModal, setShowReportModal] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-
+  const handleLoginSuccess = (phone, isNewUser) => {
+    setIsAuthenticated(true);
+    setActiveSection(isNewUser ? 'registration' : 'home');
+  };
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -85,26 +78,22 @@ function App() {
     setActiveSection('courses');
   };
 
-  return (
-    <>
-      {appState === 'LOGIN' && (
-        <div className="min-h-screen bg-[#f2f5f3] flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8">
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#f2f5f3] flex flex-col items-center justify-center font-sans">
+        <div className="w-full max-w-md">
           <Login onLoginSuccess={handleLoginSuccess} />
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {appState === 'REGISTRATION' && (
-        <div className="min-h-screen bg-[#f2f5f3] flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8">
-          <Registration phone={phone} onRegistrationSuccess={handleRegistrationSuccess} />
-        </div>
-      )}
-
-      {appState === 'DASHBOARD' && (
-        <div className="min-h-screen bg-[#f2f5f3] text-slate-800 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
-          {/* Top Navbar */}
+  return (
+    <div className="min-h-screen bg-[#f2f5f3] text-slate-800 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
+      {/* Top Navbar */}
       <Navbar
         selectedLang={selectedLang}
-        onSelectLang={setSelectedLang}
+        onSelectLang={onSelectLang}
         onLoadPersona={handleLoadPersona}
         isOnline={isOnline}
         currentProfile={profile}
@@ -129,12 +118,13 @@ function App() {
           {/* Mobile Top Navigation Pills */}
           <div className="lg:hidden flex mb-4 bg-white p-1.5 rounded-2xl border border-slate-200 overflow-x-auto gap-1.5 shadow-xs">
             {[
-              { id: 'courses', label: 'NSQF Packs (4)', icon: BookOpen },
-              { id: 'subsidies', label: 'Subsidies', icon: Building2 },
-              { id: 'centers', label: 'Centers (4)', icon: MapPin },
-              { id: 'home', label: 'Home', icon: LayoutDashboard },
-              { id: 'assistant', label: 'Voice AI', icon: Mic },
-              { id: 'profile', label: 'Profile', icon: UserCheck }
+              { id: 'courses', label: t('NSQF Packs (4)'), icon: BookOpen },
+              { id: 'subsidies', label: t('Subsidies'), icon: Building2 },
+              { id: 'centers', label: t('Centers (4)'), icon: MapPin },
+              { id: 'home', label: t('Home'), icon: LayoutDashboard },
+              { id: 'assistant', label: t('Voice AI'), icon: Mic },
+              { id: 'profile', label: t('Profile'), icon: UserCheck },
+              { id: 'registration', label: t('Registration Form'), icon: FileText }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeSection === tab.id;
@@ -171,10 +161,10 @@ function App() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                 <div className="lg:col-span-5">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">Voice Agent Quick Access</span>
+                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t(t("Voice Agent Quick Access"))}</span>
                     <button 
                       onClick={() => setActiveSection('assistant')} 
-                      className="border border-[#138808] bg-transparent text-[#138808] font-semibold py-1.5 px-3 rounded-lg hover:bg-[#138808] hover:text-white transition-colors uppercase tracking-wider text-xs cursor-pointer"
+                      className="text-xs text-emerald-700 hover:text-emerald-800 font-bold cursor-pointer"
                     >
                       Open Full Page →
                     </button>
@@ -184,12 +174,21 @@ function App() {
                     activeLanguage={selectedLang}
                     currentProfile={profile}
                   />
+                  <div className="mt-4 p-4 clay-card bg-orange-50 border-orange-200 text-center">
+                    <p className="text-sm text-slate-700 mb-2">{t("Prefer to type instead of speaking?")}</p>
+                    <button 
+                      onClick={() => setActiveSection('registration')}
+                      className="w-full py-2 bg-orange-600 text-white font-bold rounded-xl shadow-sm hover:bg-orange-700 transition"
+                    >
+                      {t("Open Manual Registration Form")}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="lg:col-span-7">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">PM-AJAY Fast Links</span>
-                    <span className="text-xs text-slate-400">Quick Navigation</span>
+                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t(t("PM-AJAY Fast Links"))}</span>
+                    <span className="text-xs text-slate-400">{t(t("Quick Navigation"))}</span>
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -207,7 +206,7 @@ function App() {
                         4 tailored skilling programs matching your trade with ₹1,500/mo DBT.
                       </p>
                       <div className="mt-3 text-xs font-bold text-emerald-700 flex items-center">
-                        <span>Browse Courses</span>
+                        <span>{t(t("Browse Courses"))}</span>
                         <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
                       </div>
                     </div>
@@ -226,7 +225,7 @@ function App() {
                         Locate 4 certified training hubs in your district with open batches.
                       </p>
                       <div className="mt-3 text-xs font-bold text-orange-700 flex items-center">
-                        <span>Find Nearest Hub</span>
+                        <span>{t(t("Find Nearest Hub"))}</span>
                         <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
                       </div>
                     </div>
@@ -245,7 +244,7 @@ function App() {
                         Capital subsidy up to ₹50,000 and free professional toolkits.
                       </p>
                       <div className="mt-3 text-xs font-bold text-amber-700 flex items-center">
-                        <span>Explore Subsidies</span>
+                        <span>{t(t("Explore Subsidies"))}</span>
                         <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
                       </div>
                     </div>
@@ -264,7 +263,7 @@ function App() {
                         View & print your official government beneficiary card.
                       </p>
                       <div className="mt-3 text-xs font-bold text-orange-700 flex items-center">
-                        <span>Print Dossier</span>
+                        <span>{t(t("Print Dossier"))}</span>
                         <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
                       </div>
                     </div>
@@ -282,7 +281,7 @@ function App() {
                   <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Home
                 </button>
                 <span>/</span>
-                <span className="font-bold text-slate-800">Recommended Packs</span>
+                <span className="font-bold text-slate-800">{t(t("Recommended Packs"))}</span>
               </div>
               <BeneficiaryDashboard 
                 profile={profile}
@@ -302,7 +301,7 @@ function App() {
                   <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Home
                 </button>
                 <span>/</span>
-                <span className="font-bold text-slate-800">PM-AJAY Subsidies</span>
+                <span className="font-bold text-slate-800">{t(t("PM-AJAY Subsidies"))}</span>
               </div>
               <BeneficiaryDashboard 
                 profile={profile}
@@ -322,7 +321,7 @@ function App() {
                   <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Home
                 </button>
                 <span>/</span>
-                <span className="font-bold text-slate-800">Training Centers</span>
+                <span className="font-bold text-slate-800">{t(t("Training Centers"))}</span>
               </div>
               <BeneficiaryDashboard 
                 profile={profile}
@@ -342,7 +341,7 @@ function App() {
                   <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Home
                 </button>
                 <span>/</span>
-                <span className="font-bold text-slate-800">Voice Assistant</span>
+                <span className="font-bold text-slate-800">{t(t("Voice Assistant"))}</span>
               </div>
               <div className="max-w-4xl mx-auto w-full">
                 <AudioRecorder 
@@ -362,7 +361,7 @@ function App() {
                   <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Home
                 </button>
                 <span>/</span>
-                <span className="font-bold text-slate-800">Skill Profile Assessment</span>
+                <span className="font-bold text-slate-800">{t(t("Skill Profile Assessment"))}</span>
               </div>
               <BeneficiaryDashboard 
                 profile={profile}
@@ -373,19 +372,44 @@ function App() {
               />
             </div>
           )}
+
+          {/* VIEW 7: REGISTRATION FORM */}
+          {activeSection === 'registration' && (
+            <div className="space-y-4 animate-in fade-in duration-200 w-full">
+              <div className="flex items-center space-x-2 text-xs text-slate-500">
+                <button onClick={() => setActiveSection('home')} className="hover:text-slate-800 flex items-center cursor-pointer">
+                  <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Home
+                </button>
+                <span>/</span>
+                <span className="font-bold text-slate-800">{t("Registration Form")}</span>
+              </div>
+              <Registration 
+                phone="1234567890" 
+                onRegistrationSuccess={() => setActiveSection('profile')} 
+              />
+            </div>
+          )}
         </main>
       </div>
 
+      {/* Printable Assessment Modal */}
       {showReportModal && (
         <BeneficiaryReportModal
           profile={profile}
           onClose={() => setShowReportModal(false)}
         />
       )}
-        </div>
-      )}
-    </>
+    </div>
   );
 }
 
-export default App;
+
+export default function App() {
+  const [selectedLang, setSelectedLang] = useState('hi');
+  return (
+    <TranslationProvider selectedLang={selectedLang}>
+      <MainApp selectedLang={selectedLang} onSelectLang={setSelectedLang} />
+    </TranslationProvider>
+  );
+}
+
