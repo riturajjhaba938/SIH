@@ -42,7 +42,7 @@ export default function Registration({ phone, onRegistrationSuccess }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-12 mb-20 p-8 md:p-12 border border-gray-200 bg-white shadow-sm">
+    <div className="max-w-2xl mx-auto mt-12 mb-20 p-8 md:p-12 border border-slate-200 bg-white shadow-md rounded-2xl">
       <div className="mb-12 border-b border-gray-200 pb-8">
         <h2 className="text-4xl heading-editorial mb-4 text-center">Complete Your Profile</h2>
         <p className="text-gray-600 text-center max-w-lg mx-auto">
@@ -73,7 +73,7 @@ export default function Registration({ phone, onRegistrationSuccess }) {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-black text-white font-semibold py-4 hover:bg-gray-800 transition-colors uppercase tracking-wider text-sm disabled:bg-gray-400"
+            className="w-full bg-[#138808] text-white font-semibold py-4 hover:opacity-90 transition-opacity uppercase tracking-wider text-sm disabled:bg-gray-400 rounded-xl"
           >
             {loading ? 'Submitting...' : 'Submit Profile'}
           </button>

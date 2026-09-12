@@ -4,6 +4,8 @@ import Navbar from './components/Navbar';
 import AudioRecorder from './components/AudioRecorder';
 import BeneficiaryDashboard from './components/BeneficiaryDashboard';
 import BeneficiaryReportModal from './components/BeneficiaryReportModal';
+import Login from './components/Login';
+import Registration from './components/Registration';
 import { 
   Mic, 
   LayoutDashboard, 
@@ -17,6 +19,18 @@ import {
 import './index.css';
 
 function App() {
+  const [appState, setAppState] = useState('LOGIN');
+  const [phone, setPhone] = useState('');
+
+  const handleLoginSuccess = (verifiedPhone) => {
+    setPhone(verifiedPhone);
+    setAppState('REGISTRATION');
+  };
+
+  const handleRegistrationSuccess = () => {
+    setAppState('DASHBOARD');
+  };
+
   const [profile, setProfile] = useState({
     name: 'Ramesh Kumar',
     district: 'Varanasi, UP',
@@ -31,6 +45,8 @@ function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showReportModal, setShowReportModal] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+
+
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -70,8 +86,22 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f2f5f3] text-slate-800 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
-      {/* Top Navbar */}
+    <>
+      {appState === 'LOGIN' && (
+        <div className="min-h-screen bg-[#f2f5f3] flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8">
+          <Login onLoginSuccess={handleLoginSuccess} />
+        </div>
+      )}
+
+      {appState === 'REGISTRATION' && (
+        <div className="min-h-screen bg-[#f2f5f3] flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8">
+          <Registration phone={phone} onRegistrationSuccess={handleRegistrationSuccess} />
+        </div>
+      )}
+
+      {appState === 'DASHBOARD' && (
+        <div className="min-h-screen bg-[#f2f5f3] text-slate-800 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
+          {/* Top Navbar */}
       <Navbar
         selectedLang={selectedLang}
         onSelectLang={setSelectedLang}
@@ -144,7 +174,7 @@ function App() {
                     <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">Voice Agent Quick Access</span>
                     <button 
                       onClick={() => setActiveSection('assistant')} 
-                      className="text-xs text-emerald-700 hover:text-emerald-800 font-bold cursor-pointer"
+                      className="border border-[#138808] bg-transparent text-[#138808] font-semibold py-1.5 px-3 rounded-lg hover:bg-[#138808] hover:text-white transition-colors uppercase tracking-wider text-xs cursor-pointer"
                     >
                       Open Full Page →
                     </button>
@@ -346,14 +376,15 @@ function App() {
         </main>
       </div>
 
-      {/* Printable Assessment Modal */}
       {showReportModal && (
         <BeneficiaryReportModal
           profile={profile}
           onClose={() => setShowReportModal(false)}
         />
       )}
-    </div>
+        </div>
+      )}
+    </>
   );
 }
 

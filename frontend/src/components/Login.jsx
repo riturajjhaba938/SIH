@@ -56,7 +56,7 @@ export default function Login({ onLoginSuccess }) {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20 p-8 border border-gray-200 bg-white shadow-sm">
+    <div className="max-w-md mx-auto mt-20 p-8 border border-slate-200 bg-white shadow-md rounded-2xl">
       <div className="text-center mb-10">
         <h1 className="text-4xl heading-editorial mb-3">PM-AJAY</h1>
         <p className="text-gray-500 uppercase tracking-widest text-sm">Voice Registration</p>
@@ -79,7 +79,7 @@ export default function Login({ onLoginSuccess }) {
           />
           <button 
             type="submit"
-            className="w-full bg-black text-white font-semibold py-4 hover:bg-gray-800 transition-colors uppercase tracking-wider text-sm mt-4"
+            className="w-full bg-[#138808] text-white font-semibold py-4 hover:opacity-90 transition-opacity uppercase tracking-wider text-sm mt-4"
           >
             Get OTP
           </button>
@@ -95,7 +95,7 @@ export default function Login({ onLoginSuccess }) {
           />
           <button 
             type="submit"
-            className="w-full bg-black text-white font-semibold py-4 hover:bg-gray-800 transition-colors uppercase tracking-wider text-sm mt-4"
+            className="w-full bg-[#138808] text-white font-semibold py-4 hover:opacity-90 transition-opacity uppercase tracking-wider text-sm mt-4 rounded-xl"
           >
             Verify OTP
           </button>
